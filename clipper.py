@@ -1,7 +1,7 @@
-#!/usr/bin/python3
 
 import pygame
 import math
+import re
 pygame.init()
 SCREENRECT = pygame.rect.Rect(0, 0, 2000, 1500)
 winstyle = 0  # |FULLSCREEN
@@ -60,9 +60,9 @@ class Commands:
         if not self.new_key_pressed:
             return None
 
-        if key[pygame.constants.K_PLUS]:
+        if key[pygame.constants.K_MINUS]:
             return -0.1
-        elif key[pygame.constants.K_MINUS]:
+        elif key[pygame.constants.K_EQUALS]:
             return 0.1
 
     def is_add_rect_commad(self):
@@ -72,12 +72,61 @@ class Commands:
         return False
 
 
+def load_saved():
+    import os
+    if not os.path.isfile('locations.txt'):
+        print("no locations.txt file found. Starting fresh")
+        return []
+    
+    try:
+        file = open("locations.txt")
+    except Exception as e:
+        print("could not open file locations.txt")
+        raise e
+    
+    lines = file.readlines()
+    file.close()
+    
+    rects = []
+    for index, line in enumerate(lines):
+        parts = None
+        try:
+            pass
+        except Exception as e:
+            print("could not parse input line " + str(index))
+            raise e
+        
+        parts = re.match("^(?P<left>\d*),\s*(?P<top>\d*),\s*(?P<width>\d*),\s*(?P<height>\d*)\s*$", line)  
+        parts = parts.groupdict()
+        if len(parts) < 4:
+            print("")
+        
+        rect = None
+        try: 
+            rect = pygame.Rect(
+                int(parts['left']), 
+                int(parts['top']), 
+                int(parts['width']), 
+                int(parts['height']))
+        except Exception as e:
+            print("could not create rect from parts of line " + index + "line should be in format 'top, left, width, height'")
+            raise e
+        rects.append(rect)
+    return rects
 
+def save_to_file(rects):
+    file = open("locations.txt", "w")
+    for rect in rects:
+        file.write("{}, {}, {}, {}\n".format(rect.left, rect.top, rect.width, rect.height))
+    
+            
+            
+        
 
 def start_clipper(image):
     INITIAL_RECT = pygame.Rect(0, 0, 100, 100)
     current = INITIAL_RECT.copy()
-    rects = []
+    rects = load_saved()
     zoom = 1
     surface = pygame.Surface((SCREENRECT.width, SCREENRECT.height))
     while True:
@@ -91,10 +140,8 @@ def start_clipper(image):
                 new_event = True
         key = pygame.key.get_pressed()
 
-        if new_event and key[pygame.constants.K_LCTRL] and key[ord('s')]:
-            for r in rects:
-                print("{},{},{},{}".format(r.x, r.y, r.width, r.height))
-                rects = []
+        if new_event and key[pygame.constants.K_LSHIFT] and key[ord('s')]:
+            save_to_file(rects)
 
         move_delta = commands.get_move_command()
         if move_delta != None:
