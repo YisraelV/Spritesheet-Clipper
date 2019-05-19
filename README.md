@@ -1,7 +1,7 @@
 # Spritesheet-Clipper
 A Simple Program to Aid in Extracting Sprites From Spritesheets 
 
-When using a spritesheet, find the accurate coordinates of the individual images can be a demanding task.
+When using a spritesheet, finding the accurate coordinates of the individual images can be a demanding task.
 
 This program enables you to to this visually, by creating rectangles around the areas you are interested in.
 
