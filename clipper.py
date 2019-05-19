@@ -2,6 +2,7 @@
 import pygame
 import math
 import re
+import json
 pygame.init()
 SCREENRECT = pygame.rect.Rect(0, 0, 2000, 1500)
 winstyle = 0  # |FULLSCREEN
@@ -84,40 +85,19 @@ def load_saved():
         print("could not open file locations.txt")
         raise e
     
-    lines = file.readlines()
+    filetext = file.read()
     file.close()
     
-    rects = []
-    for index, line in enumerate(lines):
-        parts = None
-        try:
-            pass
-        except Exception as e:
-            print("could not parse input line " + str(index))
-            raise e
-        
-        parts = re.match("^(?P<left>\d*),\s*(?P<top>\d*),\s*(?P<width>\d*),\s*(?P<height>\d*)\s*$", line)  
-        parts = parts.groupdict()
-        if len(parts) < 4:
-            print("")
-        
-        rect = None
-        try: 
-            rect = pygame.Rect(
-                int(parts['left']), 
-                int(parts['top']), 
-                int(parts['width']), 
-                int(parts['height']))
-        except Exception as e:
-            print("could not create rect from parts of line " + index + "line should be in format 'top, left, width, height'")
-            raise e
-        rects.append(rect)
+    locations = json.loads(filetext)
+    rects = [pygame.Rect(location['left'], location['top'], location['width'], location['height']) for location in locations]
     return rects
 
 def save_to_file(rects):
-    file = open("locations.txt", "w")
-    for rect in rects:
-        file.write("{}, {}, {}, {}\n".format(rect.left, rect.top, rect.width, rect.height))
+    locations = [{'left': rect.left, 'top': rect.top, 'width': rect.width, 'height': rect.height}  for rect in rects]
+    jsonstr = json.dumps(locations)
+    with open("locations.txt", "w") as file:
+        file.write(jsonstr)
+
     
             
             
